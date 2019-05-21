@@ -45,23 +45,34 @@ hook.interceptor = wrappedInterceptor.attach(hook.nativePtr, function(args) {
 **/
 
 // relevant _onHook logic
-this._onHook = function(reason, p, context, hook, java_handle) {
+this._onHook = function (reason, p, context, hook, java_handle) {
     ...
     
-    while (hc.hold_context) {
-        // next api hold a reference of the next api to be injected
-        if (hc.next_api !== null) {
-            // store the result of the api call
-            hc.next_api_result = api[hc.next_api[0]].apply(that, hc.next_api[1]);
-            // invalidate
-            hc.next_api = null;
-        }
-        // sleep this thread
-        Thread.sleep(1 / 100);
+    var hc = new HookContext(Process.getCurrentThreadId());
+    hc.context = context;
+    hc.java_handle = java_handle;
+    this.hook_contexts[hc.tid] = hc;
+    that['hook_context'] = hc;
+
+    if (DEBUG) {
+        _log('[' + hc.tid + '] onHook ' + p + ' - sleeping context. goodnight!');
     }
+
+    this._loopApi(that);
     
     ...
 }
+
+// and here we basically block the thread and wait a ping from the backend when we have code to inject in the current thread
+this._loopApi = function (that) {
+    ...
+    
+    var op = recv('' + Process.getCurrentThreadId(), function(payload) {});
+    op.wait();
+        
+    ...
+}
+
 
 // injection happens through the unique rpc.export to communicate with dwarf script
 rpc.exports = {
