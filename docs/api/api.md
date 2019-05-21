@@ -11,6 +11,8 @@ nav_order: 1
 
 api class is designed to expose mainly short hands wrappers of frida api, 
 functions to exchange data with the ui and perform operations while scripting.
+this list of api is stripped with the "user-ready-api". there are more api not included (i.e startJavaTracer)
+which are meant to be used by the UI only, but can be used any time if you know what you are doing!
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -38,6 +40,24 @@ api.deleteHook(key);
 
 ----
 
+## enumerateExports
+```javascript
+api.enumerateExports(moduleName);
+```
+
+> Enumerate exports for the given module name
+
+----
+
+## enumerateImports
+```javascript
+api.enumerateImports(moduleName);
+```
+
+> Enumerate imports for the given module name
+
+----
+
 ## enumerateJavaClasses
 ```javascript
 api.enumerateJavaClasses();
@@ -53,6 +73,33 @@ api.enumerateJavaMethods();
 ```
 
 > Start enumeration of java methods async and send data to the ui
+
+----
+
+## enumerateModules
+```javascript
+api.enumerateModules();
+```
+
+> Enumerate loaded modules
+
+----
+
+## enumerateRanges
+```javascript
+api.enumerateRanges();
+```
+
+> Enumerate mapped ranges with all permissions
+
+----
+
+## enumerateSymbols
+```javascript
+api.enumerateSymbols(moduleName);
+```
+
+> Enumerate symbols for the given module name
 
 ----
 
@@ -136,6 +183,15 @@ api.isAddressWatched(0xd6c8fd9a);
 ```
 
 > Return a boolean indicating if the address is currently watched
+
+----
+
+## injectBlob
+```javascript
+api.injectBlob(name, blobAsHex);
+```
+
+> Uses syscall memfd create to map an fd in memory which can be dlopened. Provide a custom name for the fd and the bytes as hex string of the binary to inject
 
 ----
 
