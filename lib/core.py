@@ -122,6 +122,7 @@ class Dwarf(QObject):
 
         # process
         self._pid = 0
+        self._package = None
         self._process = None
         self._script = None
         self._spawned = False
@@ -279,7 +280,7 @@ class Dwarf(QObject):
 
         try:
             self._process = self.device.attach(pid[0])
-            #self._process.enable_jit()
+            # self._process.enable_jit()
             self._pid = pid[0]
         except frida.ProcessNotFoundError:
             error_msg = 'Process not found (ProcessNotFoundError)'
@@ -373,11 +374,12 @@ class Dwarf(QObject):
 
         if self._process is not None:
             self.detach()
+
         try:
             self._pid = self.device.spawn(package)
             self._process = self.device.attach(self._pid)
-            #self._process.enable_jit()
             self._spawned = True
+            self._package = package
         except Exception as e:
             raise Exception('Frida Error: ' + str(e))
 
@@ -437,6 +439,11 @@ class Dwarf(QObject):
         is_releasing = api == 'release'
         if not is_releasing and tid == 0:
             tid = self.context_tid
+
+        # if we are releasing it might be a good time to auto-save the current session to avoid an
+        # un-attended crash from the proc, which lead to dwarf detach, which lead to lose everything
+        if is_releasing:
+            self.save_session('.dwarf_last_session')
 
         if args is not None and not isinstance(args, list):
             args = [args]
@@ -795,20 +802,22 @@ class Dwarf(QObject):
     def _on_request_resume_from_js(self, tid):
         self.dwarf_api('release', tid, tid=tid)
 
-    def save_session(self):
+    def save_session(self, to_file=None):
         hooks = None
         native_on_loads = None
         java_on_loads = None
         watchers = None
         if self._script is not None:
-            hooks = json.loads(self._script.exports.hooks())
+            session = json.loads(self._script.exports.session())
+
+            hooks = session['hooks']
             for hook_key in list(hooks.keys()):
                 hook = hooks[hook_key]
                 if 'internalHook' in hook and hook['internalHook']:
                     del hooks[hook_key]
-            native_on_loads = json.loads(self._script.exports.nativeonloads())
-            java_on_loads = json.loads(self._script.exports.javaonloads())
-            watchers = json.loads(self._script.exports.watchers())
+            native_on_loads = session['nativeOnLoads']
+            java_on_loads = session['javaOnLoads']
+            watchers = session['watchers']
 
         session_object = {
             'session': self._app_window.session_manager.session.session_type,
@@ -820,16 +829,24 @@ class Dwarf(QObject):
             'user_script': self._app_window.console_panel.get_js_console().function_content
         }
 
-        _file = QFileDialog.getSaveFileName(self._app_window)
-        if len(_file) > 0:
-            _file = _file[0]
-            with open(_file, 'w') as f:
+        is_auto_save = to_file is not None
+        if not is_auto_save:
+            _file = QFileDialog.getSaveFileName(self._app_window)
+            if len(_file) > 0:
+                to_file = _file[0]
+        else:
+            # we save the package in auto-save
+            session_object['package'] = self._package
+
+        if to_file is not None:
+            with open(to_file, 'w') as f:
                 f.write(json.dumps(session_object, indent=2))
 
-            history = self._app_window.prefs.get(prefs.RECENT_SESSIONS, default=[])
-            if _file in history:
-                history.pop(history.index(_file))
-            history.insert(0, _file)
-            if len(history) > 20:
-                history.pop(len(history) - 1)
-            self._app_window.prefs.put(prefs.RECENT_SESSIONS, history)
+            if not is_auto_save:
+                history = self._app_window.prefs.get(prefs.RECENT_SESSIONS, default=[])
+                if to_file in history:
+                    history.pop(history.index(to_file))
+                history.insert(0, to_file)
+                if len(history) > 20:
+                    history.pop(len(history) - 1)
+                self._app_window.prefs.put(prefs.RECENT_SESSIONS, history)

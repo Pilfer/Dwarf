@@ -146,7 +146,8 @@ class UpdateBar(QWidget):
 
         update_button = QPushButton('Update now!', update_label)
         update_button.setStyleSheet('padding: 0; border-color: white;')
-        update_button.setGeometry(self.parent().width() - 10 - update_label.width() * .2, 5, update_label.width() * .2, 25)
+        update_button.setGeometry(self.parent().width() - 10 - update_label.width() * .2, 5, update_label.width() * .2,
+                                  25)
         update_button.clicked.connect(self.update_now_clicked)
         h_box.addWidget(update_label)
         self.setLayout(h_box)
@@ -169,11 +170,11 @@ class WelcomeDialog(QDialog):
         self._prefs = parent.prefs
 
         self._sub_titles = [
-            ['duck', 'dumb', 'doctor', 'dutch', 'dark', 'dirty'],
-            ['warriors', 'wardrobes', 'waffles', 'wishes'],
+            ['duck', 'dumb', 'doctor', 'dutch', 'dark', 'dirty', 'damn'],
+            ['warriors', 'wardrobes', 'waffles', 'wishes', 'weather'],
             ['are', 'aren\'t', 'ain\'t', 'appears to be'],
-            ['rich', 'real', 'riffle', 'retarded', 'rock'],
-            ['as fuck', 'fancy', 'fucked', 'front-ended', 'falafel', 'french fries'],
+            ['rich', 'real', 'riffle', 'retarded', 'rock', 'raspberries'],
+            ['fuck', 'fancy', 'fucked', 'front-ended', 'falafel', 'french fries', 'fluffy'],
         ]
 
         self._recent_list_model = QStandardItemModel(0, 6)
@@ -188,8 +189,8 @@ class WelcomeDialog(QDialog):
         self._recent_list_model.setHeaderData(4, Qt.Horizontal, Qt.AlignCenter, Qt.TextAlignmentRole)
         self._recent_list_model.setHeaderData(5, Qt.Horizontal, 'Bookmarks')
         self._recent_list_model.setHeaderData(5, Qt.Horizontal, Qt.AlignCenter, Qt.TextAlignmentRole)
-        #self._recent_list_model.setHeaderData(6, Qt.Horizontal, 'Custom script')
-        #self._recent_list_model.setHeaderData(6, Qt.Horizontal, Qt.AlignCenter, Qt.TextAlignmentRole)
+        # self._recent_list_model.setHeaderData(6, Qt.Horizontal, 'Custom script')
+        # self._recent_list_model.setHeaderData(6, Qt.Horizontal, Qt.AlignCenter, Qt.TextAlignmentRole)
 
         self._recent_list = DwarfListView(self)
         self._recent_list.setModel(self._recent_list_model)
@@ -200,7 +201,7 @@ class WelcomeDialog(QDialog):
         self._recent_list.header().setSectionResizeMode(3, QHeaderView.Stretch)
         self._recent_list.header().setSectionResizeMode(4, QHeaderView.Stretch)
         self._recent_list.header().setSectionResizeMode(5, QHeaderView.Stretch)
-        #self._recent_list.header().setSectionResizeMode(6, QHeaderView.Stretch)
+        # self._recent_list.header().setSectionResizeMode(6, QHeaderView.Stretch)
 
         self._recent_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self._recent_list.customContextMenuRequested.connect(self._on_recent_sessions_context_menu)
@@ -209,7 +210,8 @@ class WelcomeDialog(QDialog):
         # setup size and remove/disable titlebuttons
         self.desktop_geom = qApp.desktop().availableGeometry()
         self.setFixedSize(self.desktop_geom.width() * .45, self.desktop_geom.height() * .38)
-        self.setGeometry(QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.size(), qApp.desktop().availableGeometry()))
+        self.setGeometry(
+            QStyle.alignedRect(Qt.LeftToRight, Qt.AlignCenter, self.size(), qApp.desktop().availableGeometry()))
         self.setSizeGripEnabled(False)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
@@ -280,7 +282,7 @@ class WelcomeDialog(QDialog):
         recent = QLabel('Last saved Sessions')
         font = recent.font()
         font.setBold(True)
-        #font.setPointSize(10)
+        # font.setPointSize(10)
         recent.setFont(font)
         wrapper.addWidget(recent)
         wrapper.addWidget(self._recent_list)
@@ -293,10 +295,19 @@ class WelcomeDialog(QDialog):
         ico = QIcon(QPixmap(utils.resource_path('assets/android.svg')))
         btn.setIconSize(QSize(75, 75))
         btn.setIcon(ico)
+        btn.setToolTip('Restore Last Session')
+        btn.clicked.connect(self._on_restore_last_session_button)
+        btn.setEnabled(os.path.exists('.dwarf_last_session'))
+        wrapper.addWidget(btn)
+
+        btn = QPushButton()
+        ico = QIcon(QPixmap(utils.resource_path('assets/android.svg')))
+        btn.setIconSize(QSize(75, 75))
+        btn.setIcon(ico)
         btn.setToolTip('New Android Session')
         btn.clicked.connect(self._on_android_button)
-
         wrapper.addWidget(btn)
+
         btn = QPushButton()
         ico = QIcon(QPixmap(utils.resource_path('assets/apple.svg')))
         btn.setIconSize(QSize(75, 75))
@@ -331,7 +342,7 @@ class WelcomeDialog(QDialog):
                 watchers = '0'
                 on_loads = 0
                 bookmarks = '0'
-                #have_user_script = False
+                # have_user_script = False
                 if 'hooks' in exported_session and exported_session['hooks'] is not None:
                     hooks = str(len(exported_session['hooks']))
                 if 'watchers' in exported_session and exported_session['watchers'] is not None:
@@ -345,9 +356,9 @@ class WelcomeDialog(QDialog):
                 if 'user_script' in exported_session and exported_session['user_script']:
                     have_user_script = exported_session['user_script'] != ''
 
-                #user_script_item = QStandardItem()
-                #if have_user_script:
-                #user_script_item.setIcon(self._dot_icon)
+                # user_script_item = QStandardItem()
+                # if have_user_script:
+                # user_script_item.setIcon(self._dot_icon)
 
                 on_loads = str(on_loads)
 
@@ -364,8 +375,8 @@ class WelcomeDialog(QDialog):
                 item_4.setTextAlignment(Qt.AlignCenter)
                 item_5 = QStandardItem(bookmarks)
                 item_5.setTextAlignment(Qt.AlignCenter)
-                #item_6 = QStandardItem(user_script_item)
-                #item_6.setTextAlignment(Qt.AlignCenter)
+                # item_6 = QStandardItem(user_script_item)
+                # item_6.setTextAlignment(Qt.AlignCenter)
 
                 self._recent_list_model.insertRow(self._recent_list_model.rowCount(), [
                     recent_session_file_item,
@@ -393,6 +404,17 @@ class WelcomeDialog(QDialog):
 
     def _update_finished(self):
         self.onUpdateComplete.emit()
+
+    def _on_restore_last_session_button(self):
+        if os.path.exists('.dwarf_last_session'):
+            with open('.dwarf_last_session', 'r') as f:
+                try:
+                    data = json.load(f)
+                except:
+                    data = None
+            if data is not None:
+                self.onSessionRestore.emit(data)
+                self.close()
 
     def _on_android_button(self):
         self.onSessionSelected.emit('Android')
@@ -437,3 +459,4 @@ class WelcomeDialog(QDialog):
         recent_session_file = self._recent_list_model.item(row, 0)
         recent_session_data = recent_session_file.data(Qt.UserRole + 2)
         self.onSessionRestore.emit(recent_session_data)
+        self.close()
