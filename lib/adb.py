@@ -235,8 +235,7 @@ class Adb(QObject):
     def available(self):
         """ Returns True if adb and dev/emu and (su or root) is True
         """
-        return self._adb_available and self._dev_emu and (self._is_root
-                                                          or self._is_su)
+        return self._adb_available and self._dev_emu and (self._is_root or self._is_su)
 
     def get_device_arch(self):
         """ Returns value from ro.product.cpu.abi

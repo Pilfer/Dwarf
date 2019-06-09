@@ -323,7 +323,6 @@ class DeviceBar(QWidget):
             self.is_waiting = False
 
     def _on_device_changed(self, index):
-        device = None
         device_id = self._devices_combobox.itemData(index)
         if device_id:
             try:

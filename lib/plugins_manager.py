@@ -31,3 +31,8 @@ class PluginsManager:
         for plugin_name in self._plugins.keys():
             plugin = self._plugins[plugin_name]
             plugin.on_session_started(self._app)
+
+    def on_attached(self, package):
+        for plugin_name in self._plugins.keys():
+            plugin = self._plugins[plugin_name]
+            plugin.on_attached(self._app, package)

@@ -47,7 +47,6 @@ class AppWindow(QMainWindow):
 
         self.session_manager = SessionManager(self)
         self.session_manager.sessionCreated.connect(self.session_created)
-        self.session_manager.sessionStarted.connect(self.session_started)
         self.session_manager.sessionStopped.connect(self.session_stopped)
         self.session_manager.sessionClosed.connect(self.session_closed)
 
@@ -198,20 +197,20 @@ class AppWindow(QMainWindow):
                 self.menu.addMenu(session_menu)
 
         self.view_menu = QMenu('View', self)
-        subview_menu = QMenu('Subview', self.view_menu)
-        subview_menu.addAction(
+        self.subview_menu = QMenu('Subview', self.view_menu)
+        self.subview_menu.addAction(
             'Search',
             lambda: self.show_main_tab('search'),
             shortcut=QKeySequence(Qt.CTRL + Qt.Key_F3))
-        subview_menu.addAction(
+        self.subview_menu.addAction(
             'Emulator',
             lambda: self.show_main_tab('emulator'),
             shortcut=QKeySequence(Qt.CTRL + Qt.Key_F2))
-        subview_menu.addAction(
+        self.subview_menu.addAction(
             'Disassembly',
             lambda: self.show_main_tab('disassembly'),
             shortcut=QKeySequence(Qt.CTRL + Qt.Key_F5))
-        self.view_menu.addMenu(subview_menu)
+        self.view_menu.addMenu(self.subview_menu)
         self.view_menu.addSeparator()
         self.menu.addMenu(self.view_menu)
 
@@ -253,8 +252,7 @@ class AppWindow(QMainWindow):
         for index in range(self.main_tabs.count()):
             tab_name = self.main_tabs.tabText(index).lower().replace(' ', '-')
             if tab_name in self.session_manager.session.non_closable:
-                self.main_tabs.tabBar().setTabButton(index, QTabBar.RightSide,
-                                                     None)
+                self.main_tabs.tabBar().setTabButton(index, QTabBar.RightSide, None)
 
                 if tab_name in self._tab_order:
                     should_index = self._tab_order.index(tab_name)
@@ -512,7 +510,12 @@ class AppWindow(QMainWindow):
         self.addDockWidget(qt_position, dock_widget)
 
     def add_tab(self, tab_name, tab_widget):
-        self.main_tabs.addTab(tab_widget, tab_name)
+        _index = self.main_tabs.indexOf(tab_widget)
+        if _index >= 0:
+            self.main_tabs.setCurrentIndex(_index)
+        else:
+            self.main_tabs.addTab(tab_widget, tab_name)
+            self.main_tabs.setCurrentIndex(self.main_tabs.indexOf(tab_widget))
 
     def set_theme(self, theme):
         if theme:
@@ -653,10 +656,6 @@ class AppWindow(QMainWindow):
             self.restoreState(window_state)
 
         self.showMaximized()
-
-    def session_started(self):
-        self.plugins_manager.reload_plugins()
-        self.plugins_manager.on_session_started()
 
     def session_stopped(self):
         self.remove_tmp_dir()
@@ -974,6 +973,9 @@ class AppWindow(QMainWindow):
 
     def _on_attached(self, data):
         self.setWindowTitle('Dwarf - Attached to %s (%s)' % (data[1], data[0]))
+
+        self.plugins_manager.reload_plugins()
+        self.plugins_manager.on_attached(data[0])
 
     def _on_script_loaded(self):
         # restore the loaded session if any
