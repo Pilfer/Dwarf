@@ -12,18 +12,23 @@ class PluginsManager:
         self._plugins = {}
 
     def reload_plugins(self):
-        for _, plugin_dirs, _ in os.walk(self._plugins_path):
-            for plugin in [x for x in plugin_dirs if x != '__pycache__']:
-                plugin_folder = [y for y in os.listdir(os.path.join(self._plugins_path, plugin)) if y != '__pycache__']
-                for plugin_file in plugin_folder:
-                    spec = importlib.util.spec_from_file_location('', location=self._plugins_path + os.path.sep + plugin + os.path.sep + plugin_file)
-                    _plugin = importlib.util.module_from_spec(spec)
+        for _, directories, _ in os.walk(self._plugins_path):
+            for directory in [x for x in directories if x != '__pycache__']:
+                plugin_dir = os.path.join(self._plugins_path, directory)
+                plugin_file = os.path.join(plugin_dir, directory + '.py')
+                # check if {pluginname}.py exitsts
+                if plugin_file and os.path.exists(plugin_file):
+                    spec = importlib.util.spec_from_file_location('', location=plugin_file)
 
                     if not spec:
                         continue
 
-                    _plugin = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(_plugin)
+                    try:
+                        _plugin = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(_plugin)
+                    except Exception as e: # pylint: disable=broad-except, invalid-name
+                        print('failed to load plugin %s: %s' % (plugin_file, str(e)))
+                        return
 
                     _classes = inspect.getmembers(_plugin, predicate=inspect.isclass)
                     for _, _class in _classes:
@@ -34,15 +39,29 @@ class PluginsManager:
                             if _class.__name__ == 'DwarfPlugin':
                                 continue
 
-                            if not isinstance(_class(), DwarfPlugin):
-                                continue
+                            _has_required_funcs = False
+                            _funcs = inspect.getmembers(_class, predicate=inspect.isfunction)
 
-                            try:
-                                _plugin = _class()
-                                self._plugins[_plugin.get_name()] = _plugin
-                                _plugin.on_plugin_loaded()
-                            except Exception as e:
-                                print('failed to load plugin %s: %s' % (plugin, str(e)))
+                            # TODO: check for all
+                            for function_name, _ in _funcs:
+                                if function_name == 'get_name':
+                                    _has_required_funcs = True
+
+                            if _has_required_funcs:
+                                try:
+                                    _instance = _class()
+                                except Exception as e: # pylint: disable=broad-except, invalid-name
+                                    print('failed to load plugin %s: %s' % (plugin_file, str(e)))
+                                    return
+
+                                if not isinstance(_instance, DwarfPlugin):
+                                    continue
+
+                                try:
+                                    self._plugins[_instance.get_name()] = _instance
+                                    _instance.on_plugin_loaded()
+                                except Exception as e: # pylint: disable=broad-except, invalid-name
+                                    print('failed to load plugin %s: %s' % (plugin_file, str(e)))
 
     def on_session_started(self):
         for plugin_name in self._plugins.keys():
