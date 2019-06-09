@@ -77,8 +77,8 @@ class SessionManager(QObject):
 
     def start_session(self, args=None):
         if self._session is not None:
-            self.sessionStarted.emit()
             self._session.start(args)
+            self.sessionStarted.emit()
 
     def stop_session(self):
         if self._session is not None:

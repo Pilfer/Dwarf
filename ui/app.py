@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QProgressBar, QTabBar,
                              QStatusBar, QDockWidget, QTabWidget, QMenu)
 
 from lib import utils
+from lib.plugins_manager import PluginsManager
 from lib.prefs import Prefs
 from lib.session_manager import SessionManager
 
@@ -46,6 +47,7 @@ class AppWindow(QMainWindow):
 
         self.session_manager = SessionManager(self)
         self.session_manager.sessionCreated.connect(self.session_created)
+        self.session_manager.sessionStarted.connect(self.session_started)
         self.session_manager.sessionStopped.connect(self.session_stopped)
         self.session_manager.sessionClosed.connect(self.session_closed)
 
@@ -53,11 +55,13 @@ class AppWindow(QMainWindow):
             'memory', 'modules', 'ranges', 'jvm-inspector', 'jvm-debugger'
         ]
 
+        self.plugins_manager = PluginsManager(self)
+
         self.menu = self.menuBar()
         self._is_newer_dwarf = False
         self.view_menu = None
 
-        #dockwidgets
+        # dockwidgets
         self.watchers_dwidget = None
         self.hooks_dwiget = None
         self.bookmarks_dwiget = None
@@ -65,7 +69,7 @@ class AppWindow(QMainWindow):
         self.console_dock = None
         self.backtrace_dock = None
         self.threads_dock = None
-        #panels
+        # panels
         self.asm_panel = None
         self.console_panel = None
         self.context_panel = None
@@ -241,7 +245,7 @@ class AppWindow(QMainWindow):
                 return
             try:
                 self._ui_elems.remove(tab_text.lower())
-            except ValueError: # recheck ValueError: list.remove(x): x not in list
+            except ValueError:  # recheck ValueError: list.remove(x): x not in list
                 pass
             self.main_tabs.removeTab(index)
 
@@ -493,7 +497,7 @@ class AppWindow(QMainWindow):
         else:
             print('no handler for elem: ' + elem)
 
-        # make tabs unclosable and sort
+        # make tabs not closeable and sort
         self._handle_tab_change()
 
         # TODO: remove add @2x
@@ -503,6 +507,12 @@ class AppWindow(QMainWindow):
                     item.setStyleSheet(
                         'QDockWidget::title { padding-left:-30px; }'
                     )
+
+    def add_panel(self, dock_widget, qt_position):
+        self.addDockWidget(qt_position, dock_widget)
+
+    def add_tab(self, tab_name, tab_widget):
+        self.main_tabs.addTab(tab_widget, tab_name)
 
     def set_theme(self, theme):
         if theme:
@@ -643,6 +653,10 @@ class AppWindow(QMainWindow):
             self.restoreState(window_state)
 
         self.showMaximized()
+
+    def session_started(self):
+        self.plugins_manager.reload_plugins()
+        self.plugins_manager.on_session_started()
 
     def session_stopped(self):
         self.remove_tmp_dir()
