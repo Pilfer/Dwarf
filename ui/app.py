@@ -47,6 +47,7 @@ class AppWindow(QMainWindow):
 
         self.session_manager = SessionManager(self)
         self.session_manager.sessionCreated.connect(self.session_created)
+        self.session_manager.sessionStarted.connect(self.session_started)
         self.session_manager.sessionStopped.connect(self.session_stopped)
         self.session_manager.sessionClosed.connect(self.session_closed)
 
@@ -657,6 +658,10 @@ class AppWindow(QMainWindow):
 
         self.showMaximized()
 
+    def session_started(self):
+        self.plugins_manager.reload_plugins()
+        self.plugins_manager.on_session_started()
+
     def session_stopped(self):
         self.remove_tmp_dir()
         self.menu.clear()
@@ -974,7 +979,6 @@ class AppWindow(QMainWindow):
     def _on_attached(self, data):
         self.setWindowTitle('Dwarf - Attached to %s (%s)' % (data[1], data[0]))
 
-        self.plugins_manager.reload_plugins()
         self.plugins_manager.on_attached(data[0])
 
     def _on_script_loaded(self):
