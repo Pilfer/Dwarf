@@ -49,7 +49,7 @@ class PluginsManager:
 
                             if _has_required_funcs:
                                 try:
-                                    _instance = _class(self._app, None)
+                                    _instance = _class(self._app, None) # TODO: fill args
                                 except Exception as e: # pylint: disable=broad-except, invalid-name
                                     print('failed to load plugin %s: %s' % (plugin_file, str(e)))
                                     return
