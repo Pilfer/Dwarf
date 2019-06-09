@@ -15,7 +15,7 @@ class PluginsManager:
         for _, directories, _ in os.walk(self._plugins_path):
             for directory in [x for x in directories if x != '__pycache__']:
                 plugin_dir = os.path.join(self._plugins_path, directory)
-                plugin_file = os.path.join(plugin_dir, directory + '.py')
+                plugin_file = os.path.join(plugin_dir, 'plugin.py')
                 # check if {pluginname}.py exitsts
                 if plugin_file and os.path.exists(plugin_file):
                     spec = importlib.util.spec_from_file_location('', location=plugin_file)
@@ -49,7 +49,7 @@ class PluginsManager:
 
                             if _has_required_funcs:
                                 try:
-                                    _instance = _class()
+                                    _instance = _class(self._app, None) # TODO: fill args
                                 except Exception as e: # pylint: disable=broad-except, invalid-name
                                     print('failed to load plugin %s: %s' % (plugin_file, str(e)))
                                     return
@@ -58,7 +58,7 @@ class PluginsManager:
                                     continue
 
                                 try:
-                                    self._plugins[_instance.get_name()] = _instance
+                                    self._plugins[_instance.name] = _instance
                                     _instance.on_plugin_loaded()
                                 except Exception as e: # pylint: disable=broad-except, invalid-name
                                     print('failed to load plugin %s: %s' % (plugin_file, str(e)))
