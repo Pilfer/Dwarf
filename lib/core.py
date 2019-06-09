@@ -651,13 +651,18 @@ class Dwarf(QObject):
             self.onAddNativeOnLoadHook.emit(h)
         elif cmd == 'hook_deleted':
             if parts[1] == 'java':
-                self.java_hooks.pop(parts[2])
+                if parts[2] in self.java_hooks:
+                    self.java_hooks.pop(parts[2])
             elif parts[1] == 'native_on_load':
-                self.native_on_loads.pop(parts[2])
+                if parts[2] in self.native_on_loads:
+                    self.native_on_loads.pop(parts[2])
             elif parts[1] == 'java_on_load':
-                self.java_on_loads.pop(parts[2])
+                if parts[1] in self.java_on_loads:
+                    self.java_on_loads.pop(parts[2])
             else:
-                self.hooks.pop(utils.parse_ptr(parts[2]))
+                ptr = utils.parse_ptr(parts[2])
+                if ptr in self.hooks:
+                    self.hooks.pop(ptr)
             self.onDeleteHook.emit(parts)
         elif cmd == 'java_on_load_callback':
             str_fmt = ('Hook java onload {0} @thread := {1}'.format(parts[1], parts[2]))
