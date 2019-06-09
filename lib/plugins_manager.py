@@ -14,6 +14,7 @@ class PluginsManager:
         self._plugins = {}
 
     def reload_plugins(self):
+        self._app.dwarf.onAttached.connect(self.on_attached)
         for _, directories, _ in os.walk(self._plugins_path):
             for directory in [x for x in directories if x != '__pycache__']:
                 plugin_dir = os.path.join(self._plugins_path, directory)
@@ -66,7 +67,6 @@ class PluginsManager:
                                     print('failed to load plugin %s: %s' % (plugin_file, str(e)))
 
     def on_session_started(self):
-        self._app.dwarf.onAttached.connect(self.on_attached)
         for plugin_name in self._plugins:
             plugin = self._plugins[plugin_name]
             plugin.on_session_started(self._app)

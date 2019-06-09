@@ -646,6 +646,8 @@ class AppWindow(QMainWindow):
         self.dwarf.onTraceData.connect(self._on_tracer_data)
         self.dwarf.onSetData.connect(self._on_set_data)
 
+        self.plugins_manager.reload_plugins() # TODO: fix
+
         self.session_manager.start_session(self.dwarf_args)
         q_settings = QSettings("dwarf_window_pos.ini", QSettings.IniFormat)
         ui_state = q_settings.value('dwarf_ui_state')
