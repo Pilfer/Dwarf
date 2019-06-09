@@ -7,6 +7,8 @@ class PluginsManager:
 
     def __init__(self, app):
         self._app = app
+        self._app.session_manager.sessionCreated.connect(self.reload_plugins)
+        self._app.session_manager.sessionStarted.connect(self.on_session_started)
         self._plugins_path = os.path.join(os.path.sep.join(os.path.realpath(__file__).split(os.path.sep)[:-2]), 'plugins')
 
         self._plugins = {}
@@ -64,11 +66,13 @@ class PluginsManager:
                                     print('failed to load plugin %s: %s' % (plugin_file, str(e)))
 
     def on_session_started(self):
-        for plugin_name in self._plugins.keys():
+        self._app.dwarf.onAttached.connect(self.on_attached)
+        for plugin_name in self._plugins:
             plugin = self._plugins[plugin_name]
             plugin.on_session_started(self._app)
 
     def on_attached(self, package):
-        for plugin_name in self._plugins.keys():
+        pid, package = package
+        for plugin_name in self._plugins:
             plugin = self._plugins[plugin_name]
             plugin.on_attached(self._app, package)
