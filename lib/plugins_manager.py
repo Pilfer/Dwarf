@@ -7,7 +7,7 @@ class PluginsManager:
 
     def __init__(self, app):
         self._app = app
-        self._app.session_manager.sessionCreated.connect(self.reload_plugins)
+        #self._app.session_manager.sessionCreated.connect(self.reload_plugins)
         self._app.session_manager.sessionStarted.connect(self.on_session_started)
         self._plugins_path = os.path.join(os.path.sep.join(os.path.realpath(__file__).split(os.path.sep)[:-2]), 'plugins')
 
