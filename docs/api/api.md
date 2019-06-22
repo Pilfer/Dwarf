@@ -236,21 +236,3 @@ api.setData(key, value);
 ```
 
 > An api suggested by a friend to send data straight to the UI. You can check an example usage [here](https://github.com/iGio90/Dwarf/wiki/Using-the-data-panel) 
-
-----
-
-## startNativeTracer
-```javascript
-api.startNativeTracer(4556);
-```
-
-> Start tracing the given thread id, return a boolean indicating if the tracer started. You can trace one thread at time
-
-----
-
-## stopNativeTracer
-```javascript
-api.stopNativeTracer();
-```
-
-> Stop tracing the previously traced thread id

@@ -27,3 +27,14 @@ Thread.new(function() {
 ```
 
 > spawn a new thread using posix C api pthread_create
+
+---
+
+## onCreate
+```javascript
+Thread.onCreate(function(targetFunction) {
+    // do stuffs
+});
+```
+
+> get notified whenever a thread is being started with target function, so you can attach it
