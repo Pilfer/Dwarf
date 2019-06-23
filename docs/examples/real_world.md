@@ -21,6 +21,7 @@ Be creative!
 
 # Scripting examples
 
+stepping module initializations, chain a break to an offset and start emulation
 ```javascript
 api.hookNativeOnLoad('xxx.so', function () {
     // grab the base
