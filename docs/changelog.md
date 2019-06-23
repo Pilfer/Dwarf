@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Changelos
+title: Changelog
 nav_order: 4
 ---
 
