@@ -31,5 +31,10 @@ Interceptor.attach(targetPtr, function() {
 
     // don't break the thread
     return -1;
+}, 
+// options
+{
+    // send full details to UI including backtrace and symbols (default true)
+    details: true
 });
 ```
