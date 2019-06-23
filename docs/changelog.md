@@ -13,7 +13,7 @@ Relevant changes
 
 **2019-06-23**
 ```
-*inside an hook callback you can now use this.postContextSetup(function() {});
+* inside an hook callback you can now use this.postContextSetup(function() {});
 the callback will be dispatched after the backend have the context in place (as standard hooks callbacks are executed before dispatching the data to the backend). This was need to automate the emulator through js api which require backend context in place
 * added a third object to Interceptor.attach(ptr, callback, options) which takes an dictonary of options.
 unique public option actually available is details true/false. certain hooks bring trouble parsing additional informations such as backtrace and symbols. this collect just the base information needed by the backend
