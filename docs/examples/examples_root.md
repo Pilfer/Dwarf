@@ -1,22 +1,18 @@
 ---
 layout: default
-title: examples
-parent: Examples
-nav_order: 1
+title: Examples
+nav_order: 5
+has_children: true
+permalink: docs/examples
 ---
 
-
+# Examples
 {: .no_toc }
-
 
 Be creative!
 {: .fs-6 .fw-300 }
 
 {: .no_toc .text-delta }
-
-{:toc}
-
-{: .no_toc }
 
 ---
 
@@ -33,3 +29,5 @@ various api (i.e enumerateExports | enumerateImports | enumerateSymbols) on your
 view to dig through ASM
 
 ---
+
+[frida api](https://www.frida.re/docs/javascript-api) are available as well while scripting and giving input to the ui.
