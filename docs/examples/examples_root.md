@@ -27,7 +27,3 @@ Be creative!
 > there are several ways. each dwarf input accepts javascript with either frida or dwarf api. you can use one of the 
 various api (i.e enumerateExports | enumerateImports | enumerateSymbols) on your target module or use the disassembly
 view to dig through ASM
-
----
-
-[frida api](https://www.frida.re/docs/javascript-api) are available as well while scripting and giving input to the ui.
